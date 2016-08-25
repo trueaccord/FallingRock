@@ -37,6 +37,12 @@ Find groups:
 
     ldapsearch -h localhost -p 1389 -D "uid=admin,ou=system" -w ADMINPASS -b "ou=groups,dc=domain,dc=com"
 
+Search for an okta group named 'Engineering':
+
+    ldapsearch -h localhost -p 1389 -D "uid=admin,ou=system" -w ADMINPASS -b "ou=groups,dc=domain,dc=com" "(&(objectclass=groupOfNames)(cn=Engineering))"
+
+Note: If you attempt to use an LDAP GUI like Apache Directory Studio, it will not work as the application does not return the standard root objects.
+
 Advanced use
 ------------
 
@@ -44,3 +50,24 @@ You can customize the attributes for users and groups by setting
 `okta.userAttributes` and `okta.groupAttributes` in the config. To see the
 default look into [defaults.js](https://github.com/trueaccord/FallingRock/blob/master/defaults.js).
 
+For Okta user default profile keys, see [Okta API - Profile Object](http://developer.okta.com/docs/api/resources/users#profile-object).
+
+Docker Image
+------------
+To build the docker container: 
+
+```
+docker build -t fallingrock .
+```
+
+To run the docker container:
+
+```
+docker run --name fallingrock \
+-p 1389:1389 \
+-v /server/path/to/config.yaml:/cfg/config.yaml \
+-d fallingrock
+```
+
+The docker container runs the application using [PM2](https://github.com/Unitech/PM2/). If you provide enviromental variables of PM2SECRET and PM2PUBLIC
+the container will register itself automatically with [Keymetrics](https://keymetrics.io/).
