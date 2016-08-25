@@ -15,6 +15,7 @@ var argv = require('yargs')
 var config = yaml.safeLoad(fs.readFileSync(argv.config, 'utf8'));
 config.ldap = config.ldap || {};
 config.ldap.port = config.ldap.port || 1389;
+winston.level = config.loglevel || "info";
 
 var ldapOptions = {};
 
@@ -121,6 +122,16 @@ buildDatabase().then(function(someDatabase) {
     });
 
     server.search('', authorize, function(req, res, next) {
+        var out = {
+          ip: req.connection.ldap.id,
+          time: req.startTime,
+          dn: req.dn.toString(),
+          scope: req.scope.toString(),
+          filter: req.filter.toString(),
+          attributes: req.attributes.toString()
+        };
+        winston.debug(JSON.stringify(out));
+
         var db = getCurrentDB();
         var dn = req.dn.toString();
         if (!db[dn]) {

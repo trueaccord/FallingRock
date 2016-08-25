@@ -24,3 +24,4 @@ okta:
     # Default to 3600 (1 hour). If negative, reloads are disabled.
     # reload_secs: 3600
 
+loglevel: info
