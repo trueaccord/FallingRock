@@ -6,16 +6,23 @@ var winston = require('winston');
 var mustache = require('mustache');
 var argv = require('yargs')
     .alias('c', 'config')
-    .alias('p', 'port')
     .alias('h', 'help')
     .default('config', './config.yaml')
     .describe('config', 'Path to yaml config file')
-    .default('port', 1389)
-    .describe('port', 'Port for LDAP server')
     .help('h')
     .argv;
 
 var config = yaml.safeLoad(fs.readFileSync(argv.config, 'utf8'));
+config.ldap = config.ldap || {};
+config.ldap.port = config.ldap.port || 1389;
+
+var ldapOptions = {};
+
+if (config.ldap.cert) {
+    ldapOptions.certificate = fs.readFileSync(config.ldap.cert);
+    ldapOptions.key = fs.readFileSync(config.ldap.key);
+}
+
 var okta = require('./okta').newClient(config.okta);
 var configDefaults = require('./defaults');
 
@@ -94,7 +101,11 @@ buildDatabase().then(function(someDatabase) {
         setInterval(buildDatabase, reload_secs);
     }
 
-    var server = ldap.createServer();
+    try {
+    var server = ldap.createServer(ldapOptions);
+    } catch(e) {
+        console.log(e);
+    }
 
     server.bind(config.admin.username, function(req, res, next) {
         if (!req.dn.equals(config.admin.username)) {
@@ -188,7 +199,7 @@ buildDatabase().then(function(someDatabase) {
             });
     });
 
-    server.listen(argv.port, function() {
+    server.listen(config.ldap.port, function() {
       winston.info('LDAP server listening at %s', server.url);
     });
 });

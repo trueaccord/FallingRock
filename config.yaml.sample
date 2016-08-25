@@ -6,6 +6,12 @@ admin:
     username: uid=admin,ou=system
     password: PASSWORD
 
+ldap:
+    port: 1389
+    ## If you want TLS, uncomment those two lines.
+    # cert: ldap-server.crt
+    # key: ldap-server.key
+
 okta:
     # URL for Okta API
     url: https://DOMAIN.okta.com
