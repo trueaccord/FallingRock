@@ -6,8 +6,14 @@ var winston = require('winston');
 var mustache = require('mustache');
 
 var config = yaml.safeLoad(fs.readFileSync('config.yaml', 'utf8'));
-
 var okta = require('./okta').newClient(config.okta);
+var configDefaults = require('./defaults');
+
+config.okta.userAttributes =
+    config.okta.userAttributes || configDefaults.DEFAULT_USER_TEMPLATE;
+
+config.okta.groupAttributes =
+    config.okta.groupAttributes || configDefaults.DEFAULT_GROUP_TEMPLATE;
 
 function addParents(db, dn) {
     var dn = ldap.parseDN(dn)
@@ -24,26 +30,26 @@ function addParents(db, dn) {
 function buildDatabase() {
     return okta.buildOktaDirectory().then(function(oktaDirectory) {
         oktaDirectory.groups.forEach(function(group) {
-            var dn = interpolateObject(config.okta.groupFormat.dn, group);
+            var dn = interpolateObject(config.okta.groupDN, group);
             group.dn = ldap.parseDN(dn).toString();
         });
 
         oktaDirectory.users.forEach(function(user) {
             user.shortName = user.profile.email.split('@')[0];
-            var dn = interpolateObject(config.okta.userFormat.dn, user);
+            var dn = interpolateObject(config.okta.userDN, user);
             user.dn = ldap.parseDN(dn).toString();
         });
 
         var db = {};
-        addParents(db, config.okta.userFormat.dn);
-        addParents(db, config.okta.groupFormat.dn);
+        addParents(db, config.okta.userDN);
+        addParents(db, config.okta.groupDN);
 
         oktaDirectory.groups.forEach(function(group) {
-            var o = interpolateObject(config.okta.groupFormat.attributes, group);
+            var o = interpolateObject(config.okta.groupAttributes, group);
             db[group.dn] = {attributes: o, original: group, type: 'group'};
         });
         oktaDirectory.users.forEach(function(user) {
-            var o = interpolateObject(config.okta.userFormat.attributes, user);
+            var o = interpolateObject(config.okta.userAttributes, user);
             db[user.dn] = {attributes: o, original: user, type: 'user'};
         });
         return db;
