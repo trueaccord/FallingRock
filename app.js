@@ -4,8 +4,18 @@ var fs = require('fs');
 var yaml = require('js-yaml');
 var winston = require('winston');
 var mustache = require('mustache');
+var argv = require('yargs')
+    .alias('c', 'config')
+    .alias('p', 'port')
+    .alias('h', 'help')
+    .default('config', './config.yaml')
+    .describe('config', 'Path to yaml config file')
+    .default('port', 1389)
+    .describe('port', 'Port for LDAP server')
+    .help('h')
+    .argv;
 
-var config = yaml.safeLoad(fs.readFileSync('config.yaml', 'utf8'));
+var config = yaml.safeLoad(fs.readFileSync(argv.config, 'utf8'));
 var okta = require('./okta').newClient(config.okta);
 var configDefaults = require('./defaults');
 
@@ -161,7 +171,7 @@ buildDatabase().then(function(db) {
             });
     });
 
-    server.listen(1389, function() {
+    server.listen(argv.port, function() {
       winston.info('LDAP server listening at %s', server.url);
     });
 });
