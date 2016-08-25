@@ -14,3 +14,7 @@ okta:
     userDN: uid={{{shortName}}},ou=users,dc=DOMAIN,dc=com
     groupDN: cn={{{profile.name}}},ou=groups,dc=DOMAIN,dc=com
 
+    # How often to reload directory from Okta, in seconds.
+    # Default to 3600 (1 hour). If negative, reloads are disabled.
+    # reload_secs: 3600
+

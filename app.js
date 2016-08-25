@@ -37,7 +37,11 @@ function addParents(db, dn) {
     }
 }
 
+var Container = {
+};
+
 function buildDatabase() {
+    winston.info('Loading in-memory database.');
     return okta.buildOktaDirectory().then(function(oktaDirectory) {
         oktaDirectory.groups.forEach(function(group) {
             var dn = interpolateObject(config.okta.groupDN, group);
@@ -62,6 +66,8 @@ function buildDatabase() {
             var o = interpolateObject(config.okta.userAttributes, user);
             db[user.dn] = {attributes: o, original: user, type: 'user'};
         });
+        winston.info('New in-memory database load completed.');
+        Container.db = db;
         return db;
     }, function(r) {
         winston.error('Failed to load database: %s', r);
@@ -78,7 +84,16 @@ function authorize(req, res, next) {
   return next();
 }
 
-buildDatabase().then(function(db) {
+function getCurrentDB() {
+    return Container.db;
+}
+
+buildDatabase().then(function(someDatabase) {
+    var reload_secs = (config.okta.reload_secs || 3600) * 1000;
+    if (reload_secs >= 0) {
+        setInterval(buildDatabase, reload_secs);
+    }
+
     var server = ldap.createServer();
 
     server.bind(config.admin.username, function(req, res, next) {
@@ -95,6 +110,7 @@ buildDatabase().then(function(db) {
     });
 
     server.search('', authorize, function(req, res, next) {
+        var db = getCurrentDB();
         var dn = req.dn.toString();
         if (!db[dn]) {
             return next(new ldap.NoSuchObjectError(dn));
@@ -156,6 +172,7 @@ buildDatabase().then(function(db) {
     });
 
     server.bind('', authorize, function(req, res, next) {
+        var db = getCurrentDB();
         var dn = req.dn.toString();
         if (!db[dn] || db[dn].type !== 'user') {
             return next(new ldap.NoSuchObjectError(dn));
