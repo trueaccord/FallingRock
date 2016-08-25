@@ -42,7 +42,7 @@ function createOktaClient(oktaConfig) {
 
     function getOktaGroups() {
         winston.info('Fetching okta groups');
-        return getOktaList(`${oktaConfig.url}/api/v1/groups?limit=200`);
+        return getOktaList(`${oktaConfig.url}/api/v1/groups?limit=200&filter=type+eq+"OKTA_GROUP"`);
     }
 
     function getOktaUsers() {
