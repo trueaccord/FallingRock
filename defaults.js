@@ -15,7 +15,7 @@ module.exports = {
     },
 
     DEFAULT_GROUP_TEMPLATE: {
-        'objectClass': 'groupofnames',
+        'objectClass': 'groupOfNames',
         'cn': '{{{profile.name}}}',
         'description': '{{{profile.description}}}',
         'member': {

@@ -6,5 +6,5 @@ COPY package.json /src/
 RUN npm install
 
 COPY *.js /src/
-ENTRYPOINT ["node", "server.js"]
+ENTRYPOINT ["node", "server.js","-c","/cfg/config.yaml"]
 
