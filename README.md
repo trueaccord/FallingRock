@@ -65,9 +65,6 @@ To run the docker container:
 ```
 docker run --name fallingrock \
 -p 1389:1389 \
--v /server/path/to/config.yaml:/cfg/config.yaml \
+-v /server/path/to/config/:/cfg/ \
 -d fallingrock
 ```
-
-The docker container runs the application using [PM2](https://github.com/Unitech/PM2/). If you provide enviromental variables of PM2SECRET and PM2PUBLIC
-the container will register itself automatically with [Keymetrics](https://keymetrics.io/).
