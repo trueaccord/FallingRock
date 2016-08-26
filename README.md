@@ -54,17 +54,11 @@ For Okta user default profile keys, see [Okta API - Profile Object](http://devel
 
 Docker Image
 ------------
-To build the docker container:
-
-```
-docker build -t fallingrock .
-```
-
 To run the docker container:
 
 ```
 docker run --name fallingrock \
--p 1389:1389 \
--v /server/path/to/config/:/cfg/ \
--d fallingrock /cfg/config.yaml
+  -p 1389:1389 \
+  -v /server/path/to/config/:/cfg/ \
+  trueaccord/fallingrock /cfg/config.yaml
 ```
